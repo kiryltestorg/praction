@@ -1,13 +1,20 @@
 name: 'Hello World'
 description: 'Greet someone and record the time'
 inputs:
-  who-to-greet:  # id of input
-    description: 'Who to greet'
+  accessKeyId:  # id of input
     required: true
-    default: 'World'
-outputs:
-  time: # id of output
-    description: 'The time we greeted you'
+  secretAccessKey: 
+    required: true
+  bucketName:
+    required: true
+  tarUrl: 
+    required: true
+  fileName:
+    required: true
+  region: 
+    required: true
+  path: 
+    required: true
 runs:
   using: 'node16'
-  main: 'index.js'
+  main: 'dist/index.js'

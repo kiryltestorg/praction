@@ -1,15 +1,53 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
+const fs = require('fs');
+const https = require('https');
+const url = require('url');
+const {  PutObjectCommand, S3Client } = require('@aws-sdk/client-s3')
+const  { Octokit, App } = require("octokit");
+const cfg = require( 'dotenv/config');
 
-try {
-  // `who-to-greet` input defined in action metadata file
-  const nameToGreet = core.getInput('who-to-greet');
-  console.log(`Hello ${nameToGreet}!`);
-  const time = (new Date()).toTimeString();
-  core.setOutput("time", time);
-  // Get the JSON webhook payload for the event that triggered the workflow
-  const payload = JSON.stringify(github.context.payload, undefined, 2)
-  console.log(`The event payload: ${payload}`);
-} catch (error) {
-  core.setFailed(error.message);
-}
+
+var accessKeyId =  core.getInput('accessKeyId');
+var secretAccessKey = core.getInput("secretAccessKey");
+var bucketName = core.getInput("bucketName")
+var TAR_URL = core.getInput("tarUrl");
+var FILE_NAME = core.getInput("fileName")
+var region = core.getInput("region")
+var path = core.getInput("path")
+
+let client = new S3Client({
+  region:region,
+  credentials:{
+      accessKeyId:accessKeyId,
+      secretAccessKey:secretAccessKey
+  }
+});
+
+function writeToFile(response) {
+  response.pipe(fs.createWriteStream(FILE_NAME));
+}var options = {
+  host: 'api.github.com',
+  path: TAR_URL,
+  method: 'GET',
+  headers: {'user-agent': 'node.js'}
+};
+https.get(options, function(response) {
+  if (response.statusCode > 300 && response.statusCode < 400 && response.headers.location) {
+    if (url.parse(response.headers.location).hostname) {
+      https.get(response.headers.location, writeToFile);
+    } else {
+      https.get(url.resolve(url.parse(TAR_URL).hostname, response.headers.location), writeToFile);
+    }
+  } else {
+    writeToFile(response);
+  }
+});
+
+var fileStream = fs.createReadStream(FILE_NAME);
+var putParams = {
+    Bucket: bucketName,
+    Key: path,
+    Body: fileStream
+};
+const data =  client.send(new PutObjectCommand(putParams));
