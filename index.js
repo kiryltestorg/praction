@@ -5,7 +5,6 @@ const https = require('https');
 const url = require('url');
 const {  PutObjectCommand, S3Client } = require('@aws-sdk/client-s3')
 const  { Octokit, App } = require("octokit");
-const cfg = require( 'dotenv/config');
 
 
 var accessKeyId =  core.getInput('accessKeyId');
