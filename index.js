@@ -44,4 +44,5 @@ var putParams = {
 const data =  client.send(new PutObjectCommand(putParams));
 }
 catch(e){
+    core.setOutput("file", FILE_NAME);
 }
