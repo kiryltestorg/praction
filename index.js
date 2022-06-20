@@ -35,7 +35,7 @@ https.get(options, function(response) {
 });
 try{
 
-var fileStream = fs.createReadStream(`${__dirname}\\${FILE_NAME}`);
+var fileStream = fs.createReadStream(`${__dirname}\/${FILE_NAME}`);
 var putParams = {
     Bucket: bucketName,
     Key: path,
