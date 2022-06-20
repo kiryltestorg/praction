@@ -33,7 +33,7 @@ https.get(options, function(response) {
   }
 });
 
-// var fileStream = fs.createReadStream(FILE_NAME);
+ var fileStream = fs.createReadStream(FILE_NAME);
 // var putParams = {
 //     Bucket: bucketName,
 //     Key: path,
