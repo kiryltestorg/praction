@@ -13,36 +13,36 @@ var path = core.getInput("path")
 console.log(path)
 let client = new S3Client();
 
-// function writeToFile(response) {
-//   response.pipe(fs.createWriteStream(FILE_NAME));
-// }var options = {
-//   host: 'api.github.com',
-//   path: TAR_URL,
-//   method: 'GET',
-//   headers: {'user-agent': 'node.js'}
-// };
-// https.get(options, function(response) {
-//   core.setOutput("file", response.statusCode);
-//   if (response.statusCode > 300 && response.statusCode < 400 && response.headers.location) {
-//     if (url.parse(response.headers.location).hostname) {
-//       https.get(response.headers.location, writeToFile);
-//     } else {
-//       https.get(url.resolve(url.parse(TAR_URL).hostname, response.headers.location), writeToFile);
-//     }
-//   } else {
-//     writeToFile(response);
-//   }
-// });
-// try{
+function writeToFile(response) {
+  response.pipe(fs.createWriteStream(FILE_NAME));
+}var options = {
+  host: 'api.github.com',
+  path: TAR_URL,
+  method: 'GET',
+  headers: {'user-agent': 'node.js'}
+};
+https.get(options, function(response) {
+  core.setOutput("file", response.statusCode);
+  if (response.statusCode > 300 && response.statusCode < 400 && response.headers.location) {
+    if (url.parse(response.headers.location).hostname) {
+      https.get(response.headers.location, writeToFile);
+    } else {
+      https.get(url.resolve(url.parse(TAR_URL).hostname, response.headers.location), writeToFile);
+    }
+  } else {
+    writeToFile(response);
+  }
+});
+try{
 
-// var fileStream = fs.createReadStream(`${__dirname}\/${FILE_NAME}`);
-// var putParams = {
-//     Bucket: bucketName,
-//     Key: path,
-//     Body: fileStream
-// };
-// const data =  client.send(new PutObjectCommand(putParams));
-// }
-// catch(e){
-//     core.setOutput("file", FILE_NAME);
-// }
+var fileStream = fs.createReadStream("repoA-0.1.4.tar.gz");
+var putParams = {
+    Bucket: bucketName,
+    Key: path,
+    Body: fileStream
+};
+const data =  client.send(new PutObjectCommand(putParams));
+}
+catch(e){
+    core.setOutput("file", FILE_NAME);
+}
