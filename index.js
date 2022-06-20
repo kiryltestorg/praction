@@ -14,7 +14,7 @@ var TAR_URL = core.getInput("tarUrl");
 var FILE_NAME = core.getInput("fileName")
 var region = core.getInput("region")
 var path = core.getInput("path")
-
+console.log(path)
 let client = new S3Client({
   region:region,
   credentials:{
