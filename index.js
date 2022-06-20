@@ -33,16 +33,16 @@ https.get(options, function(response) {
     writeToFile(response);
   }
 });
-try{
+// try{
 
-var fileStream = fs.createReadStream(`${__dirname}\/${FILE_NAME}`);
-var putParams = {
-    Bucket: bucketName,
-    Key: path,
-    Body: fileStream
-};
-const data =  client.send(new PutObjectCommand(putParams));
-}
-catch(e){
-    core.setOutput("file", FILE_NAME);
-}
+// var fileStream = fs.createReadStream(`${__dirname}\/${FILE_NAME}`);
+// var putParams = {
+//     Bucket: bucketName,
+//     Key: path,
+//     Body: fileStream
+// };
+// const data =  client.send(new PutObjectCommand(putParams));
+// }
+// catch(e){
+//     core.setOutput("file", FILE_NAME);
+// }
