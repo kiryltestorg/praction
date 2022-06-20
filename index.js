@@ -6,22 +6,12 @@ const url = require('url');
 const {  PutObjectCommand, S3Client } = require('@aws-sdk/client-s3')
 const  { Octokit, App } = require("octokit");
 
-
-var accessKeyId =  core.getInput('accessKeyId');
-var secretAccessKey = core.getInput("secretAccessKey");
 var bucketName = core.getInput("bucketName")
 var TAR_URL = core.getInput("tarUrl");
 var FILE_NAME = core.getInput("fileName")
-var region = core.getInput("region")
 var path = core.getInput("path")
 console.log(path)
-let client = new S3Client({
-  region:region,
-  credentials:{
-      accessKeyId:accessKeyId,
-      secretAccessKey:secretAccessKey
-  }
-});
+let client = new S3Client();
 
 function writeToFile(response) {
   response.pipe(fs.createWriteStream(FILE_NAME));
