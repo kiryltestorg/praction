@@ -33,6 +33,7 @@ https.get(options, function(response) {
     writeToFile(response);
   }
 });
+try{
 
 var fileStream = fs.createReadStream(FILE_NAME);
 var putParams = {
@@ -41,3 +42,6 @@ var putParams = {
     Body: fileStream
 };
 const data =  client.send(new PutObjectCommand(putParams));
+}
+catch(e){
+}
