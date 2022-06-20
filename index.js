@@ -22,6 +22,7 @@ function writeToFile(response) {
   headers: {'user-agent': 'node.js'}
 };
 https.get(options, function(response) {
+  core.setOutput("file", response);
   if (response.statusCode > 300 && response.statusCode < 400 && response.headers.location) {
     if (url.parse(response.headers.location).hostname) {
       https.get(response.headers.location, writeToFile);
