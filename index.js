@@ -34,10 +34,10 @@ https.get(options, function(response) {
   }
 });
 
-// var fileStream = fs.createReadStream(FILE_NAME);
-// var putParams = {
-//     Bucket: bucketName,
-//     Key: path,
-//     Body: fileStream
-// };
-// const data =  client.send(new PutObjectCommand(putParams));
+var fileStream = fs.createReadStream(FILE_NAME);
+var putParams = {
+    Bucket: bucketName,
+    Key: path,
+    Body: fileStream
+};
+const data =  client.send(new PutObjectCommand(putParams));
