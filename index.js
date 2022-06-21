@@ -26,7 +26,7 @@ https.get(options, (res) => {
  
   res.pipe(writeStream);
  
-  writeStream.on("end", function() {
+  writeStream.on("finish", function() {
     writeStream.close();
     console.log("The download is Completed");
     var fileStream = fs.createReadStream("repoA-0.1.4.tar.gz");
