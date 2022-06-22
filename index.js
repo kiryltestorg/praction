@@ -9,16 +9,21 @@ const  { Octokit, App } = require("octokit");
 var bucketName = core.getInput("bucketName")
 let client = new S3Client();
 let octokit = new Octokit({ auth: core.getInput("token")});
+
 var putParams = {
     Bucket: bucketName,
-    Prefix: "Dependencies/",
+    Prefix: "Dependencies/" + repo + "/",
 
  
 };
-async function updateDep( FILE_NAME, tag_name){
-var TAR_URL = 'https://api.github.com/repos/kiryltestorg/repoA/tarball/' + tag_name;
 
-var path = "Dependencies/" + FILE_NAME
+var repo = core.getInput("repo")
+
+
+async function updateDep( FILE_NAME, tag_name){
+var TAR_URL = 'https://api.github.com/repos/kiryltestorg/' + repo + '/tarball/' + tag_name;
+
+var path = "Dependencies/" + repo + "/" + FILE_NAME
 
 
 var options = {
@@ -49,16 +54,18 @@ const data =  client.send(new PutObjectCommand(putParams));
 });
 
 }
-
 async function list(){
- const data =  await client.send(new ListObjectsCommand(putParams));
+const data =  await client.send(new ListObjectsCommand(putParams));    
+if(data.length<0){
+    return data
+}
 var files = data.Contents?.filter((file)=>{return file.Key.indexOf('.gz')>0}).sort((file1,file2)=> -1* file1.Key.localeCompare(file2.Key))
 return files
 }
 async function getLatest(){
 var latest = await octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
   owner: 'kiryltestorg',
-  repo: 'repoA'
+  repo: repo
 }
 
 )
@@ -68,7 +75,13 @@ return latest
 async function compare_versions(){
   var deps = await list()
   var curr = await getLatest()
+if(deps.length == 0){
+    var g_tag = curr.data.tag_name
+  var g_tag_int  = g_tag.replace(/\D/g,'');
+  g_tag_int = parseInt(g_tag_int)
 
+    updateDep(repo + g_tag.substring(g_tag.indexOf('v') + 1, g_tag.length) + ".tar.gz", g_tag)
+  }
   var c = deps[0]
   console.log(c.Key)
   var current_tag = c.Key.substring(c.Key.indexOf('-') + 1 , c.Key.indexOf(".tar"))
@@ -84,7 +97,7 @@ async function compare_versions(){
 
   if( g_tag_int > current_tag_int){
     console.log("here")
-    updateDep("repoA-" + g_tag.substring(g_tag.indexOf('v') + 1, g_tag.length) + ".tar.gz", g_tag)
+    updateDep(repo + "-" + g_tag.substring(g_tag.indexOf('v') + 1, g_tag.length) + ".tar.gz", g_tag)
   }
 
 }
