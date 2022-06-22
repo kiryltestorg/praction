@@ -10,7 +10,7 @@ var bucketName = core.getInput("bucketName")
 let client = new S3Client();
 
 var putParams = {
-    Bucket: "bucketName",
+    Bucket: bucketName,
     Prefix: "Dependencies/",
 
  
