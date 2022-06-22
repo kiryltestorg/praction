@@ -8,7 +8,7 @@ const  { Octokit, App } = require("octokit");
 
 var bucketName = core.getInput("bucketName")
 let client = new S3Client();
-
+let octokit = new Octokit({ auth: core.getInput("token")});
 var putParams = {
     Bucket: bucketName,
     Prefix: "Dependencies/",
