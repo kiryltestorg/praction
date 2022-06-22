@@ -3,7 +3,7 @@ const github = require('@actions/github');
 const fs = require('fs');
 const https = require('https');
 const url = require('url');
-const {  PutObjectCommand, S3Client } = require('@aws-sdk/client-s3')
+const {  PutObjectCommand, S3Client ,ListObjectsCommand} = require('@aws-sdk/client-s3')
 const  { Octokit, App } = require("octokit");
 
 var bucketName = core.getInput("bucketName")
