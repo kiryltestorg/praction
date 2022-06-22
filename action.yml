@@ -1,13 +1,13 @@
 name: 'Hello World'
 description: 'Greet someone and record the time'
 inputs:
+  token:
+    required: true
   bucketName:
     required: true
   tarUrl: 
     required: true
   fileName:
-    required: true
-  region: 
     required: true
   path: 
     required: true
