@@ -101,7 +101,7 @@ if(!deps){
 
   if( g_tag_int > current_tag_int){
     console.log("here")
-    updateDep(repo + "-" + g_tag.substring(g_tag.indexOf('v') + 1, g_tag.length) + ".tar.gz", g_tag)
+    updateDep(repo + "_" + g_tag.substring(g_tag.indexOf('v') + 1, g_tag.length) + ".tar.gz", g_tag)
   }
 
 }
