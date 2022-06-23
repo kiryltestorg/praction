@@ -84,6 +84,7 @@ if(!deps){
   g_tag_int = parseInt(g_tag_int)
 
     updateDep(repo + g_tag.substring(g_tag.indexOf('v') + 1, g_tag.length) + ".tar.gz", g_tag)
+   return 
   }
   var c = deps[0]
   console.log(c.Key)
