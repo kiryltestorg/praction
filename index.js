@@ -18,10 +18,10 @@ var putParams = {
 };
 
 var repo = core.getInput("repo")
-console.log(repo)
 
 
 async function updateDep( FILE_NAME, tag_name){
+ console.log(FILE_NAME)
 var TAR_URL = 'https://api.github.com/repos/kiryltestorg/' + repo + '/tarball/' + tag_name;
 
 var path = "Dependencies/" + repo + "/" + FILE_NAME
@@ -76,8 +76,6 @@ return latest
 async function compare_versions(){
   var deps = await list()
   var curr = await getLatest()
-  console.log(deps)
-  console.log(curr)
 if(!deps){
     var g_tag = curr.data.tag_name
   var g_tag_int  = g_tag.replace(/\D/g,'');
