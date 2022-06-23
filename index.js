@@ -76,6 +76,8 @@ return latest
 async function compare_versions(){
   var deps = await list()
   var curr = await getLatest()
+  console.log(deps)
+  console.log(curr)
 if(!deps){
     var g_tag = curr.data.tag_name
   var g_tag_int  = g_tag.replace(/\D/g,'');
