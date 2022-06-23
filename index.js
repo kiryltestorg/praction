@@ -18,6 +18,7 @@ var putParams = {
 };
 
 var repo = core.getInput("repo")
+console.log(repo)
 
 
 async function updateDep( FILE_NAME, tag_name){
@@ -75,7 +76,7 @@ return latest
 async function compare_versions(){
   var deps = await list()
   var curr = await getLatest()
-if(deps.length == 0){
+if(!deps){
     var g_tag = curr.data.tag_name
   var g_tag_int  = g_tag.replace(/\D/g,'');
   g_tag_int = parseInt(g_tag_int)
