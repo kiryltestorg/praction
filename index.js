@@ -9,6 +9,7 @@ const  { Octokit, App } = require("octokit");
 var bucketName = core.getInput("bucketName")
 let client = new S3Client();
 let octokit = new Octokit({ auth: core.getInput("token")});
+var repo = core.getInput("repo")
 
 var putParams = {
     Bucket: bucketName,
@@ -17,7 +18,7 @@ var putParams = {
  
 };
 
-var repo = core.getInput("repo")
+
 
 
 async function updateDep( FILE_NAME, tag_name){
