@@ -73,36 +73,45 @@ var latest = await octokit.request('GET /repos/{owner}/{repo}/releases/latest', 
 return latest
 }
 
-async function compare_versions(){
-  var deps = await list()
-  var curr = await getLatest()
-if(!deps){
-    var g_tag = curr.data.tag_name
-  var g_tag_int  = g_tag.replace(/\D/g,'');
-  g_tag_int = parseInt(g_tag_int)
-
-    updateDep(repo +"-"+ g_tag.substring(g_tag.indexOf('v') + 1, g_tag.length) + ".tar.gz", g_tag)
-   return 
+function compareVersions(v1, v2){
+  let v1_split = v1.split(".")
+  let v2_split = v2.split(".")
+  if(v1_split.length == v2_split.length){
+    for(let i = 0 ; i<v1_split.length; i++){
+      if(v1_split[i] > v2_split[i]){
+        return 1
+    }
+      if(v1_split[i]<v2_split[i]){
+        return -1
+    }
   }
-  var c = deps[0]
-  console.log(c.Key)
-  var current_tag = c.Key.substring(c.Key.indexOf('-') + 1 , c.Key.indexOf(".tar"))
-  console.log(current_tag)
-  console.log(curr.data.tag_name)
-  var g_tag = curr.data.tag_name
-  var g_tag_int  = g_tag.replace(/\D/g,'');
-  var current_tag_int = current_tag.replace(/\D/g,'');
+      return 0
+  }
+  else{
+    return 0
+}
+}
 
-  g_tag_int = parseInt(g_tag_int)
-  current_tag_int = parseInt(current_tag_int)
+async function syncDependencies(){
+  var s3_dep_list = await list()
+  var gh_latest_release = await getLatest()
+  var g_tag = gh_latest_release.data.tag_name.replace("v", "")
+  if(!s3_dep_list){
+    updateDep(repo + "-" + g_tag + ".tar.gz", g_tag)
+    return
+  }
+  
+  var s3_latest = s3_dep_list[0]
+  var s3_latest_tag = s3_latest.Key.substring(s3_latest.Key.indexOf('-') + 1 , s3_latest.Key.indexOf(".tar"))
+  console.log(s3_latest_tag)
+  console.log(g_tag)
 
 
-  if( g_tag_int > current_tag_int){
-    console.log("here")
-    updateDep((repo + "-" + g_tag.substring(g_tag.indexOf('v') + 1, g_tag.length) + ".tar.gz"), g_tag)
+  if(compareVersions(g_tag,s3_latest_tag)){
+    updateDep(repo + "-" + g_tag + ".tar.gz", g_tag)
   }
 
 }
 
 
-compare_versions()
+syncDependencies()
