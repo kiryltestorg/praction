@@ -97,7 +97,6 @@ async function syncDependencies(){
   var s3_dep_list = await list()
   var gh_latest_release = await getLatest()
   
-  console.log(s3_dep_list) 
   var g_tag = gh_latest_release.data.tag_name.replace("v", "")
   if(!s3_dep_list){
     updateDep(repo + "-" + g_tag + ".tar.gz", g_tag)
