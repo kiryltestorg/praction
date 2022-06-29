@@ -19,7 +19,7 @@ async function updateDep(FILE_NAME, tag_name,repo) {
   var TAR_URL = 'https://api.github.com/repos/kiryltestorg/' + repo + '/tarball/' + tag_name;
 
   var path = "Dependencies/" + repo + "/" + FILE_NAME
-
+  console.log(path)
 
   var options = {
     host: 'api.github.com',
