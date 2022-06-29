@@ -14,7 +14,7 @@ var repo_list = repo_list_string.split(",");
 
 
 
-async function updateDep(FILE_NAME, tag_name) {
+async function updateDep(FILE_NAME, tag_name,repo) {
   console.log(FILE_NAME)
   var TAR_URL = 'https://api.github.com/repos/kiryltestorg/' + repo + '/tarball/' + tag_name;
 
@@ -98,7 +98,7 @@ async function syncDependencies(repo) {
 
   var g_tag = gh_latest_release.data.tag_name.replace("v", "")
   if (!s3_dep_list) {
-    updateDep(repo + "-" + g_tag + ".tar.gz", g_tag)
+    updateDep(repo + "-" + g_tag + ".tar.gz", g_tag, repo)
     return
   }
 
@@ -108,7 +108,7 @@ async function syncDependencies(repo) {
   console.log(g_tag)
 
 
-  if (compareVersions(g_tag, s3_latest_tag)) {
+  if (compareVersions(g_tag, s3_latest_tag,repo)) {
     updateDep(repo + "-" + g_tag + ".tar.gz", g_tag)
   }
 
