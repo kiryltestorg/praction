@@ -111,7 +111,7 @@ async function syncDependencies(repo) {
   var owner = path_and_org[1]
   var path = path_and_org[0]
 
-  var s3_dep_list = await list(repo, path)
+  var s3_dep_list = await list(path)
   var gh_latest_release = await getLatest(repo, owner)
 
   var g_tag = gh_latest_release.data.tag_name.replace("v", "")
