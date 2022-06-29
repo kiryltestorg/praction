@@ -14,7 +14,7 @@ var repo_list_string = core.getInput("repo")
 var repo_list = repo_list_string.split(",");
 
 
-async function updateDep(FILE_NAME, tag_name, owner) {
+async function updateDep(FILE_NAME, tag_name,repo, owner) {
   console.log(FILE_NAME)
   var TAR_URL = 'https://api.github.com/repos/' + owner + '/' + repo + '/tarball/' + tag_name;
 
@@ -116,7 +116,7 @@ async function syncDependencies(repo) {
 
   var g_tag = gh_latest_release.data.tag_name.replace("v", "")
   if (!s3_dep_list) {
-    updateDep(repo + "-" + g_tag + ".tar.gz", g_tag, owner)
+    updateDep(repo + "-" + g_tag + ".tar.gz", g_tag, repo, owner)
     return
   }
 
@@ -127,7 +127,7 @@ async function syncDependencies(repo) {
 
 
   if (compareVersions(g_tag, s3_latest_tag)) {
-    updateDep(repo + "-" + g_tag + ".tar.gz", g_tag, owner)
+    updateDep(repo + "-" + g_tag + ".tar.gz", g_tag, repo, owner)
   }
 
 }
