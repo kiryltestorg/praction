@@ -10,7 +10,7 @@ var bucketName = core.getInput("bucketName")
 let client = new S3Client();
 let octokit = new Octokit({ auth: core.getInput("token") });
 var repo_list_string = core.getInput("repo")
-var repo_list = string.split(repo_list_string);
+var repo_list = repo_list_string.split(",");
 
 
 
