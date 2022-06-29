@@ -108,8 +108,8 @@ async function syncDependencies(repo) {
   console.log(g_tag)
 
 
-  if (compareVersions(g_tag, s3_latest_tag,repo)) {
-    updateDep(repo + "-" + g_tag + ".tar.gz", g_tag)
+  if (compareVersions(g_tag, s3_latest_tag)) {
+    updateDep(repo + "-" + g_tag + ".tar.gz", g_tag,repo)
   }
 
 }
