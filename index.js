@@ -14,7 +14,7 @@ var repo_list_string = core.getInput("repo")
 var repo_list = repo_list_string.split(",");
 
 var depPath = core.getInput("depPath")
-const fs = require('fs')
+
 
 const dir = fs.opendirSync(depPath)
 let dirent
