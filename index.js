@@ -21,7 +21,7 @@ const dir = fs.opendirSync(depPath)
 let dirent
 while ((dirent = dir.readSync()) !== null) {
   console.log(dirent.name)
-  var config = JSON.parse(fs.readFileSync(path.join(__dirname, dirent.name), 'utf8'));
+  var config = JSON.parse(fs.readFileSync(dirent.name), 'utf8'));
   // opening dependency json file 
   console.log(config)
 }
