@@ -4,6 +4,7 @@ const github = require('@actions/github');
 const fs = require('fs');
 const https = require('https');
 const url = require('url');
+const path = require('path')
 const { PutObjectCommand, S3Client, ListObjectsCommand } = require('@aws-sdk/client-s3')
 const { Octokit, App } = require("octokit");
 
@@ -20,5 +21,8 @@ const dir = fs.opendirSync(depPath)
 let dirent
 while ((dirent = dir.readSync()) !== null) {
   console.log(dirent.name)
+  var config = JSON.parse(fs.readFileSync(path.join(__dirname, dirent.name), 'utf8'));
+  // opening dependency json file 
+  console.log(config)
 }
 dir.closeSync()
