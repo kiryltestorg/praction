@@ -71,7 +71,7 @@ while ((dirent = dir.readSync()) !== null) {
   var config = JSON.parse(fs.readFileSync(path.join(depPath,dirent.name)), 'utf8');
   // opening dependency json file 
   console.log(config)
-  config[SHA256]="2243"
+  config['SHA256']="2243"
   await exec.exec('git', ['commit', '-m', 'updated config'], options);
 }}
 updateConfig()
