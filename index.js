@@ -74,3 +74,4 @@ while ((dirent = dir.readSync()) !== null) {
   config[SHA256]="2243"
   await exec.exec('git', ['commit', '-m', 'updated config'], options);
 }}
+updateConfig()
