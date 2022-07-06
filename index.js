@@ -25,12 +25,18 @@ while ((dirent = dir.readSync()) !== null) {
   // opening dependency json file 
   console.log(config)
 }
-async function getMainRef(){
-var ref = await octokit.request('GET /repos/{owner}/{repo}/git/ref/{ref}', {
-  owner: 'kiryltestorg',
-  repo: 'mainRepo',
-  ref: 'main'
-})
-return ref }
-console.log(getMainRef());
+ octokit = new Octokit({ auth: process.env.TOKEN });
+   function getMainRef(){
+    var ref = octokit.request('GET /repos/{owner}/{repo}/git/ref/{ref}', {
+      owner: 'kiryltestorg',
+      repo: 'mainRepo',
+      ref: 'heads/main'
+    })
+    return ref 
+  }
+  async function getSha(){
+    var sha = await getMainRef()
+     console.log(sha.data.object.sha)
+  }
+  getSha()
 dir.closeSync()
