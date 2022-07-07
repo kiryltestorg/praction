@@ -29,7 +29,7 @@ function getMainRef(){
   return ref 
 }
 function createRef(hash){
-   octokit.request('POST /repos/{owner}/{repo}/git/refs', {
+   await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
     owner: 'kiryltestorg',
     repo: 'mainRepo',
     ref: 'refs/heads/Pr1',
