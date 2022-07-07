@@ -74,8 +74,8 @@ while ((dirent = dir.readSync()) !== null) {
   config['SHA256']="2243"
   fs.writeFile(path.join(depPath,dirent.name), JSON.stringify(config), function writeJSON(err) {
   if (err) return console.log(err);
-  console.log(JSON.stringify(file));
-  console.log('writing to ' + fileName);
+  console.log(JSON.stringify(config));
+  console.log('writing to ' + path.join(depPath,dirent.name));
 });
   
   await exec.exec('git', ['add', '.'], options);
