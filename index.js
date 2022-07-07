@@ -43,19 +43,25 @@ listeners: {
   }
 }
 };
-async function createPr(){
-  var ref = await getMainRef()
 
-   console.log(ref.data.object.sha)
-  var hash = ref.data.object.sha
-     await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
+ function createRef(hash){
+  console.log("creating ref")
+ var res = octokit.request('POST /repos/{owner}/{repo}/git/refs', {
     owner: 'kiryltestorg',
     repo: 'mainRepo',
     ref: 'refs/heads/Pr1',
     sha: hash
   })
+ return res
+}
+async function createPr(){
+  var ref = await getMainRef()
 
-   
+   console.log(ref.data.object.sha)
+  var hash = ref.data.object.sha
+  var res = await createRef(hash)
+
+  
   
   
 console.log(myError)
