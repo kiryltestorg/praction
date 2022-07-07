@@ -28,15 +28,6 @@ function getMainRef(){
   })
   return ref 
 }
- function createRef(hash){
-  console.log("creating ref")
-    octokit.request('POST /repos/{owner}/{repo}/git/refs', {
-    owner: 'kiryltestorg',
-    repo: 'mainRepo',
-    ref: 'refs/heads/Pr1',
-    sha: hash
-  })
-}
 const exec = require('@actions/exec');
 
 let myOutput = '';
@@ -54,8 +45,15 @@ listeners: {
 };
 async function createPr(){
   var ref = await getMainRef()
-  console.log(await createRef(ref.data.object.sha))
+
    console.log(ref.data.object.sha)
+  var hash = ref.data.object.sha
+     await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
+    owner: 'kiryltestorg',
+    repo: 'mainRepo',
+    ref: 'refs/heads/Pr1',
+    sha: hash
+  })
 
    
   
