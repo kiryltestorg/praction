@@ -50,7 +50,7 @@ function createRef(hash) {
     var res = octokit.request('POST /repos/{owner}/{repo}/git/refs', {
       owner: 'kiryltestorg',
       repo: 'mainRepo',
-      ref: 'refs/heads/Pr1',
+      ref: 'refs/heads/Pr2',
       sha: hash
     })
    
@@ -77,7 +77,7 @@ async function updateConfig(){
    await createPr()
   await exec.exec('git', ['fetch'], options);
    console.log("checking out Code")
-   await exec.exec('git', ['checkout', 'Pr1'], options);
+   await exec.exec('git', ['checkout', 'Pr2'], options);
 while ((dirent = dir.readSync()) !== null) {
   console.log(dirent.name)
   var config = JSON.parse(fs.readFileSync(path.join(depPath,dirent.name)), 'utf8');
@@ -93,12 +93,13 @@ while ((dirent = dir.readSync()) !== null) {
   await exec.exec('git', ['add', '.'], options);
   await exec.exec('git', ['commit', '-m', 'updated config'], options);
   await exec.exec('git', ['push'], options);
+  await exec.exec('git', ['checkout', 'main'], options);
   await octokit.request('POST /repos/{owner}/{repo}/pulls', {
   owner: 'kiryltestorg',
   repo: 'mainRepo',
   title: 'Updated Config',
   body: 'Approve Changes',
-  head: 'Pr1',
+  head: 'Pr2',
   base: 'main'
 })
 }}
