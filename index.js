@@ -84,7 +84,7 @@ while ((dirent = dir.readSync()) !== null) {
   // opening dependency json file 
   console.log(config)
   config['SHA256']="2243"
-  fs.writeFile(path.join(depPath,dirent.name), JSON.stringify(config), function writeJSON(err) {
+  await fs.writeFile(path.join(depPath,dirent.name), JSON.stringify(config), function writeJSON(err) {
   if (err) return console.log(err);
   console.log(JSON.stringify(config));
   console.log('writing to ' + path.join(depPath,dirent.name));
