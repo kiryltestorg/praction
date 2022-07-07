@@ -28,7 +28,7 @@ function getMainRef(){
   })
   return ref 
 }
-function createRef(hash){
+async function createRef(hash){
    await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
     owner: 'kiryltestorg',
     repo: 'mainRepo',
