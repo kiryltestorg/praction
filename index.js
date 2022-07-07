@@ -57,7 +57,7 @@ async function createPr(){
    console.log(ref.data.object.sha)
 
    
-   await exec.exec('git', ['checkout', 'Pr1'], options);
+  
   
 console.log(myError)
 console.log(myOutput)
@@ -66,6 +66,7 @@ createPr()
 
 
 async function updateConfig(){
+   await exec.exec('git', ['checkout', 'Pr1'], options);
 while ((dirent = dir.readSync()) !== null) {
   console.log(dirent.name)
   var config = JSON.parse(fs.readFileSync(path.join(depPath,dirent.name)), 'utf8');
@@ -80,5 +81,6 @@ while ((dirent = dir.readSync()) !== null) {
   
   await exec.exec('git', ['add', '.'], options);
   await exec.exec('git', ['commit', '-m', 'updated config'], options);
+  await exec.exec('git', ['push'], options);
 }}
 updateConfig()
