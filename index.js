@@ -62,10 +62,11 @@ async function createPr(){
 console.log(myError)
 console.log(myOutput)
 }
-createPr()
+
 
 
 async function updateConfig(){
+   await createPr()
    await exec.exec('git', ['checkout', 'Pr1'], options);
 while ((dirent = dir.readSync()) !== null) {
   console.log(dirent.name)
