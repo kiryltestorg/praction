@@ -72,6 +72,12 @@ while ((dirent = dir.readSync()) !== null) {
   // opening dependency json file 
   console.log(config)
   config['SHA256']="2243"
+  fs.writeFile(path.join(depPath,dirent.name), JSON.stringify(config), function writeJSON(err) {
+  if (err) return console.log(err);
+  console.log(JSON.stringify(file));
+  console.log('writing to ' + fileName);
+});
+  
   await exec.exec('git', ['add', '.'], options);
   await exec.exec('git', ['commit', '-m', 'updated config'], options);
 }}
