@@ -93,5 +93,13 @@ while ((dirent = dir.readSync()) !== null) {
   await exec.exec('git', ['add', '.'], options);
   await exec.exec('git', ['commit', '-m', 'updated config'], options);
   await exec.exec('git', ['push'], options);
+  await octokit.request('POST /repos/{owner}/{repo}/pulls', {
+  owner: 'kiryltestorg',
+  repo: 'mainRepo',
+  title: 'Updated Config',
+  body: 'Approve Changes',
+  head: 'Pr1',
+  base: 'main'
+})
 }}
 updateConfig()
