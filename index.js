@@ -13,9 +13,9 @@ let client = new S3Client();
 let octokit = new Octokit({ auth: core.getInput("token") });
 var repo_list_string = core.getInput("repo")
 var repo_list = repo_list_string.split(",");
-
+var token = core.getInput("token")
 var depPath = core.getInput("depPath")
-
+octokit = new Octokit(token);
 
 const dir = fs.opendirSync(depPath)
 let dirent
