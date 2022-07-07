@@ -74,7 +74,7 @@ console.log(myOutput)
 
 
 async function updateConfig(){
-   //await createPr()
+   await createPr()
   await exec.exec('git', ['fetch'], options);
    console.log("checking out Code")
    await exec.exec('git', ['checkout', 'Pr1'], options);
