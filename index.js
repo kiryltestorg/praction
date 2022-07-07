@@ -72,6 +72,7 @@ while ((dirent = dir.readSync()) !== null) {
   // opening dependency json file 
   console.log(config)
   config['SHA256']="2243"
+  await exec.exec('git', ['add', '.'], options);
   await exec.exec('git', ['commit', '-m', 'updated config'], options);
 }}
 updateConfig()
