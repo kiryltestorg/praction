@@ -87,7 +87,6 @@ while ((dirent = dir.readSync()) !== null) {
   await fs.writeFile(path.join(depPath,dirent.name), JSON.stringify(config), function writeJSON(err) {
   if (err) return console.log(err);
   console.log(JSON.stringify(config));
-  console.log('writing to ' + path.join(depPath,dirent.name));
 });
   
   
