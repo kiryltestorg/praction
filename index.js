@@ -54,7 +54,7 @@ listeners: {
 };
 async function createPr(){
   var ref = await getMainRef()
-  await createRef(ref.data.object.sha)
+  console.log(await createRef(ref.data.object.sha))
    console.log(ref.data.object.sha)
 
    
