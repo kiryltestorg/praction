@@ -132,12 +132,12 @@ async function updateConfig() {
     console.log(dirent.name)
     var config = JSON.parse(fs.readFileSync(path.join(depPath, dirent.name)), 'utf8');
     // opening dependency json file 
-    var s3_dep_list = await list("Dependencies/" + dirent.name)
+    var s3_dep_list = await list("Dependencies/" +  dirent.name.replace(".json",""))
     if(!s3_dep_list){
       continue
     }
     var s3_latest = s3_dep_list[0]
-    var hash = await generateHash("Dependencies/" + dirent.name + "/" + s3_latest)
+    var hash = await generateHash("Dependencies/" +  dirent.name.replace(".json","")+ "/" + s3_latest)
     console.log(config)
     config['SHA256'] = hash
     await fs.writeFile(path.join(depPath, dirent.name), JSON.stringify(config), function writeJSON(err) {
