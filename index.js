@@ -117,11 +117,12 @@ async function generateHash(key,path){
     console.log("hash : " + gen_hash);
 
     console.log(bodyContents);
+    return gen_hash
       //return bodyContents;
   } catch (err) {
     console.log("Error", err);
   }
-  return gen_hash
+  
 };
 async function updateConfig() {
   await createPr()
