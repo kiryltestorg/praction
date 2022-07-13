@@ -2,10 +2,8 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const fs = require('fs');
-const https = require('https');
-const url = require('url');
 const path = require('path')
-const { PutObjectCommand, S3Client, ListObjectsCommand } = require('@aws-sdk/client-s3')
+const {  S3Client, ListObjectsCommand } = require('@aws-sdk/client-s3')
 const { Octokit, App } = require("octokit");
 
 var bucketName = core.getInput("bucketName")
@@ -20,13 +18,13 @@ var depPath = core.getInput("depPath")
 const dir = fs.opendirSync(depPath)
 let dirent
 
-function getMainRef(){
+function getMainRef() {
   var ref = octokit.request('GET /repos/{owner}/{repo}/git/ref/{ref}', {
     owner: 'kiryltestorg',
     repo: 'mainRepo',
     ref: 'heads/main'
   })
-  return ref 
+  return ref
 }
 const exec = require('@actions/exec');
 
@@ -34,14 +32,14 @@ let myOutput = '';
 let myError = '';
 
 const options = {
-listeners: {
-  stdout: (data) => {
-    myOutput += data.toString();
-  },
-  stderr: (data) => {
-    myError += data.toString();
+  listeners: {
+    stdout: (data) => {
+      myOutput += data.toString();
+    },
+    stderr: (data) => {
+      myError += data.toString();
+    }
   }
-}
 };
 
 function createRef(hash) {
@@ -53,54 +51,112 @@ function createRef(hash) {
       ref: 'refs/heads/Pr1',
       sha: hash
     })
-   
-    resolve(res) 
+
+    resolve(res)
   })
 }
-async function createPr(){
+async function createPr() {
   var ref = await getMainRef()
 
-   console.log(ref.data.object.sha)
+  console.log(ref.data.object.sha)
   var hash = ref.data.object.sha
   var res = await createRef(hash)
 
-  
-  
-  
-console.log(myError)
-console.log(myOutput)
+
+
+
+  console.log(myError)
+  console.log(myOutput)
 }
 
+async function list(path) {
+  var params = {
+    Bucket: bucketName,
+    Prefix: path + "/",
+  };
 
+  const data = await client.send(new ListObjectsCommand(params));
+  if (data.length < 0) {
+    return data
+  }
+  //gets all objects in the bucket folder specified by path 
+  var files = data.Contents?.filter((file) => { return file.Key.indexOf('.gz') > 0 }).sort((file1, file2) => -1 * file1.Key.localeCompare(file2.Key))
+  //gets all the file names that end with the file extension .gz and sorts them desc alphabetically
+  return files
+}
+async function generateHash(key,path){
+  var params = {
+    Bucket: bucketName,
+    Key: key,
+  };
+ 
 
-async function updateConfig(){
-   await createPr()
+  try {
+    // Create a helper function to convert a ReadableStream to a string.
+    const streamToString = (stream) =>
+      new Promise((resolve, reject) => {
+        const chunks = [];
+        stream.on("data", (chunk) => chunks.push(chunk));
+        stream.on("error", reject);
+        stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+      });
+
+    // Get the object} from the Amazon S3 bucket. It is returned as a ReadableStream.
+    const data = await client.send(new GetObjectCommand(params));
+     // return data; // For unit tests.
+    // Convert the ReadableStream to a string.
+    const bodyContents = await streamToString(data.Body);
+    var crypto = require('crypto');
+    //creating hash object 
+    var hash = crypto.createHash('sha512');
+    //passing the data to be hashed
+    hash_data = hash.update(bodyContents, 'utf-8');
+    //Creating the hash in the required format
+    gen_hash= hash_data.digest('hex');
+    //Printing the output on the console
+    console.log("hash : " + gen_hash);
+
+    console.log(bodyContents);
+      //return bodyContents;
+  } catch (err) {
+    console.log("Error", err);
+  }
+  return gen_hash
+};
+async function updateConfig() {
+  await createPr()
   await exec.exec('git', ['fetch'], options);
-   console.log("checking out Code")
-   await exec.exec('git', ['checkout', 'Pr1'], options);
-while ((dirent = dir.readSync()) !== null) {
-  console.log(dirent.name)
-  var config = JSON.parse(fs.readFileSync(path.join(depPath,dirent.name)), 'utf8');
-  // opening dependency json file 
-  console.log(config)
-  config['SHA256']="2243"
-  await fs.writeFile(path.join(depPath,dirent.name), JSON.stringify(config), function writeJSON(err) {
-  if (err) return console.log(err);
-  console.log(JSON.stringify(config));
-});
-  
-  
-}
-await exec.exec('git', ['add', '.'], options);
+  console.log("checking out Code")
+  await exec.exec('git', ['checkout', 'Pr1'], options);
+  while ((dirent = dir.readSync()) !== null) {
+    console.log(dirent.name)
+    var config = JSON.parse(fs.readFileSync(path.join(depPath, dirent.name)), 'utf8');
+    // opening dependency json file 
+    var s3_dep_list = await list("Dependencies/" + dirent.name)
+    if(!s3_dep_list){
+      continue
+    }
+    var s3_latest = s3_dep_list[0]
+    var hash = await generateHash("Dependencies/" + dirent.name + "/" + s3_latest)
+    console.log(config)
+    config['SHA256'] = hash
+    await fs.writeFile(path.join(depPath, dirent.name), JSON.stringify(config), function writeJSON(err) {
+      if (err) return console.log(err);
+      console.log(JSON.stringify(config));
+    });
+
+
+  }
+  await exec.exec('git', ['add', '.'], options);
   await exec.exec('git', ['commit', '-m', 'updated config'], options);
   await exec.exec('git', ['push'], options);
   await octokit.request('POST /repos/{owner}/{repo}/pulls', {
-  owner: 'kiryltestorg',
-  repo: 'mainRepo',
-  title: 'Updated Config',
-  body: 'Approve Changes',
-  head: 'Pr1',
-  base: 'main'
-})
+    owner: 'kiryltestorg',
+    repo: 'mainRepo',
+    title: 'Updated Config',
+    body: 'Approve Changes',
+    head: 'Pr1',
+    base: 'main'
+  })
 }
 updateConfig()
