@@ -169,7 +169,7 @@ async function updateConfig() {
     
 
     var hash = await generateHash(s3_latest.Key)
-    console.log(config)
+    console.log(hash)
     config['SHA512'] = hash
     await fs.writeFile(path.join(depPath, dirent.name), JSON.stringify(config), function writeJSON(err) {
       if (err) return console.log(err);
