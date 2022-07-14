@@ -153,17 +153,17 @@ async function updateConfig() {
       var last_updated = new Date(config["last_updated"])
 
       if(LastModified>last_updated){
-        config["last_updated"] = new Date().toISOString;
+        config["last_updated"] = new Date().toISOString();
       }
       else{
         console.log("config already up to date")
-        return 
+        continue 
       }
 
 
     }
     else{
-      config["last_updated"] = new Date().toISOString;
+      config["last_updated"] = new Date().toISOString();
     }
     
 
