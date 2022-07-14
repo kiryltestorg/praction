@@ -85,6 +85,8 @@ async function list(path) {
   return files
 }
 async function generateHash(key,path){
+  console.log(key)
+  console.log(path)
   var params = {
     Bucket: bucketName,
     Key: key,
