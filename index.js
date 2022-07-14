@@ -134,7 +134,7 @@ async function getLastModified(key){
   return data.LastModified
 }
 async function updateConfig() {
-  var branchName = "UpdateConfig_" + new Date().toISOString();
+  var branchName = "UpdateConfig_" + new Date().getTime().toString();
   await createBranch(branchName)
   await exec.exec('git', ['fetch'], options);
   console.log("checking out Code")
