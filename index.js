@@ -194,7 +194,7 @@ async function updateConfig() {
     await octokit.request('DELETE /repos/{owner}/{repo}/git/refs/{ref}', {
       owner: 'kiryltestorg',
       repo: 'mainRepo',
-      ref: 'refs' + "/" + 'heads' + "/" + branchName
+      ref: 'heads/' + branchName
     })
   }
 }
