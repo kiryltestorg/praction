@@ -152,7 +152,7 @@ async function updateConfig() {
     var LastModified = getLastModified(s3_latest.Key)
     if(config["last_updated"] != ""){
       var last_updated = new Date(config["last_updated"])
-
+      console.log("Last Updated:" + last_updated + "   " + "Last Modified:" + LastModified)
       if(LastModified>last_updated){
         config["last_updated"] = new Date().toISOString();
       }
