@@ -42,25 +42,25 @@ const options = {
   }
 };
 
-function createRef(hash) {
+function createRef(hash,branchName) {
   console.log("creating ref")
   return new Promise(function (resolve, reject) {
     var res = octokit.request('POST /repos/{owner}/{repo}/git/refs', {
       owner: 'kiryltestorg',
       repo: 'mainRepo',
-      ref: 'refs/heads/Pr1',
+      ref: 'refs/heads/' + branchName,
       sha: hash
     })
 
     resolve(res)
   })
 }
-async function createPr() {
+async function createBranch(branchName) {
   var ref = await getMainRef()
 
   console.log(ref.data.object.sha)
   var hash = ref.data.object.sha
-  var res = await createRef(hash)
+  var res = await createRef(hash,branchName)
 
 
 
@@ -134,10 +134,11 @@ async function getLastModified(key){
   return data.LastModified
 }
 async function updateConfig() {
-  await createPr()
+  var branchName = "UpdateConfig_" + new Date().toISOString;
+  await createBranch(branchName)
   await exec.exec('git', ['fetch'], options);
   console.log("checking out Code")
-  await exec.exec('git', ['checkout', 'Pr1'], options);
+  await exec.exec('git', ['checkout', branchName], options);
   while ((dirent = dir.readSync()) !== null) {
     console.log(dirent.name)
     var config = JSON.parse(fs.readFileSync(path.join(depPath, dirent.name)), 'utf8');
@@ -177,6 +178,7 @@ async function updateConfig() {
 
 
   }
+  try{
   await exec.exec('git', ['add', '.'], options);
   await exec.exec('git', ['commit', '-m', 'updated config'], options);
   await exec.exec('git', ['push'], options);
@@ -185,8 +187,15 @@ async function updateConfig() {
     repo: 'mainRepo',
     title: 'Updated Config',
     body: 'Approve Changes',
-    head: 'Pr1',
+    head: branchName,
     base: 'main'
-  })
+  })}
+  catch(err){
+    await octokit.request('DELETE /repos/{owner}/{repo}/git/refs/{ref}', {
+      owner: 'kiryltestorg',
+      repo: 'mainRepo',
+      ref: 'refs/heads/' + branchName
+    })
+  }
 }
 updateConfig()
