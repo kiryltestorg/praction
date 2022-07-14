@@ -84,9 +84,8 @@ async function list(path) {
   //gets all the file names that end with the file extension .gz and sorts them desc alphabetically
   return files
 }
-async function generateHash(key,path){
+async function generateHash(key){
   console.log(key)
-  console.log(path)
   var params = {
     Bucket: bucketName,
     Key: key,
@@ -140,7 +139,7 @@ async function updateConfig() {
       continue
     }
     var s3_latest = s3_dep_list[0]
-    var hash = await generateHash("Dependencies/" +  dirent.name.replace(".json","")+ "/" + s3_latest)
+    var hash = await generateHash("Dependencies/" +  dirent.name.replace(".json","")+ "/" + s3_latest.key)
     console.log(config)
     config['SHA256'] = hash
     await fs.writeFile(path.join(depPath, dirent.name), JSON.stringify(config), function writeJSON(err) {
