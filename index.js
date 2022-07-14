@@ -149,7 +149,7 @@ async function updateConfig() {
     }
     var s3_latest = s3_dep_list[0]
 
-    var LastModified = getLastModified(s3_latest.Key)
+    var LastModified = await getLastModified(s3_latest.Key)
     if(config["last_updated"] != ""){
       var last_updated = new Date(config["last_updated"])
       console.log("Last Updated:" + last_updated + "   " + "Last Modified:" + LastModified)
