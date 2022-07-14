@@ -139,7 +139,7 @@ async function updateConfig() {
       continue
     }
     var s3_latest = s3_dep_list[0]
-    var hash = await generateHash("Dependencies/" +  s3_latest.Key)
+    var hash = await generateHash(s3_latest.Key)
     console.log(config)
     config['SHA256'] = hash
     await fs.writeFile(path.join(depPath, dirent.name), JSON.stringify(config), function writeJSON(err) {
