@@ -117,7 +117,7 @@ async function generateHash(key){
     //Printing the output on the console
     console.log("hash : " + gen_hash);
 
-    console.log(bodyContents);
+    
     return gen_hash
       //return bodyContents;
   } catch (err) {
@@ -125,6 +125,14 @@ async function generateHash(key){
   }
   
 };
+async function getLastModified(key){
+  var params = {
+    Bucket: bucketName,
+    Key: key,
+  };
+  const data = await client.send(new HeadObjectCommand(params));
+  return data.LastModified()
+}
 async function updateConfig() {
   await createPr()
   await exec.exec('git', ['fetch'], options);
@@ -139,9 +147,29 @@ async function updateConfig() {
       continue
     }
     var s3_latest = s3_dep_list[0]
+
+    var LastModified = getLastModified(s3_latest.Key)
+    if(config["last_updated"] != ""){
+      var last_updated = new Date(config["last_updated"])
+
+      if(LastModified>last_updated){
+        config["last_updated"] = new Date().toISOString;
+      }
+      else{
+        console.log("config already up to date")
+        return 
+      }
+
+
+    }
+    else{
+      config["last_updated"] = new Date().toISOString;
+    }
+    
+
     var hash = await generateHash(s3_latest.Key)
     console.log(config)
-    config['SHA256'] = hash
+    config['SHA512'] = hash
     await fs.writeFile(path.join(depPath, dirent.name), JSON.stringify(config), function writeJSON(err) {
       if (err) return console.log(err);
       console.log(JSON.stringify(config));
