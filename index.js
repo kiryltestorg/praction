@@ -131,7 +131,7 @@ async function getLastModified(key){
     Key: key,
   };
   const data = await client.send(new HeadObjectCommand(params));
-  return data.LastModified()
+  return data.LastModified
 }
 async function updateConfig() {
   await createPr()
