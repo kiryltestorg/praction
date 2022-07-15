@@ -134,7 +134,21 @@ async function getLastModified(key){
   const data = await client.send(new HeadObjectCommand(params));
   return data.LastModified
 }
+async function existsPR(){
+  var res = await octokit.request('GET /repos/{owner}/{repo}/pulls', {
+    owner: owner,
+    repo: repo
+  })
+  console.log(res.data[0].title)
+  return (res.data.filter(e => e.title === 'Updated Config').length > 0) 
+ 
+}
 async function updateConfig() {
+  var exists_PR = await existsPR()
+  if(exists_PR){
+   console.log("A Pull Request Already Exists")
+   return
+  }
   var branchName = "UpdateConfig_" + new Date().getTime().toString();
   await createBranch(branchName)
   await exec.exec('git', ['fetch'], options);
