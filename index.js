@@ -3,7 +3,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const fs = require('fs');
 const path = require('path')
-const {  S3Client, ListObjectsCommand,GetObjectCommand ,HeadObjectCommand} = require('@aws-sdk/client-s3')
+const { S3Client, ListObjectsCommand, GetObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3')
 const { Octokit, App } = require("octokit");
 const exec = require('@actions/exec');
 
@@ -17,6 +17,7 @@ var owner = core.getInput("owner")
 var main_branch = core.getInput("main_branch")
 
 const dir = fs.opendirSync(depPath)
+//opens folder where dependency configs are stored
 let dirent
 
 function getMainRef() {
@@ -25,6 +26,7 @@ function getMainRef() {
     repo: repo,
     ref: 'heads/' + main_branch
   })
+  //create ref of the main branch 
   return ref
 }
 
@@ -43,7 +45,9 @@ const options = {
   }
 };
 
-function createRef(hash,branchName) {
+function createRef(hash, branchName) {
+  //creating a new branch with name: branchName
+  //based on hash taken from the branch we want the new one to be based on 
   console.log("creating ref")
   return new Promise(function (resolve, reject) {
     var res = octokit.request('POST /repos/{owner}/{repo}/git/refs', {
@@ -53,21 +57,22 @@ function createRef(hash,branchName) {
       sha: hash
     })
 
+
     resolve(res)
   })
 }
 async function createBranch(branchName) {
-  var ref = await getMainRef()
+  try {
+    var ref = await getMainRef()
+    //get ref of branch we want the new branch to be based on 
+    var hash = ref.data.object.sha
+    //pass in the hash 
+    var res = await createRef(hash, branchName)
+  }
+  catch (err) {
+    console.log(err)
+  }
 
-  console.log(ref.data.object.sha)
-  var hash = ref.data.object.sha
-  var res = await createRef(hash,branchName)
-
-
-
-
-  console.log(myError)
-  console.log(myOutput)
 }
 
 async function list(path) {
@@ -80,19 +85,18 @@ async function list(path) {
   if (data.length < 0) {
     return data
   }
-  //gets all objects in the bucket folder specified by path 
+  //gets all objects in the bucket specified by path 
   var files = data.Contents?.filter((file) => { return file.Key.indexOf('.gz') > 0 }).sort((file1, file2) => -1 * file1.Key.localeCompare(file2.Key))
   //gets all the file names that end with the file extension .gz and sorts them desc alphabetically
+  //result is an array with the most recent versions of the tar files coming first 
   return files
 }
-async function generateHash(key){
-  console.log(key)
+async function generateHash(key) {
+
   var params = {
     Bucket: bucketName,
     Key: key,
   };
- 
-
   try {
     // Create a helper function to convert a ReadableStream to a string.
     const streamToString = (stream) =>
@@ -105,7 +109,6 @@ async function generateHash(key){
 
     // Get the object} from the Amazon S3 bucket. It is returned as a ReadableStream.
     const data = await client.send(new GetObjectCommand(params));
-     // return data; // For unit tests.
     // Convert the ReadableStream to a string.
     const bodyContents = await streamToString(data.Body);
     var crypto = require('crypto');
@@ -114,99 +117,120 @@ async function generateHash(key){
     //passing the data to be hashed
     hash_data = hash.update(bodyContents, 'utf-8');
     //Creating the hash in the required format
-    gen_hash= hash_data.digest('hex');
-    //Printing the output on the console
-    console.log("hash : " + gen_hash);
-
-    
+    gen_hash = hash_data.digest('hex');
     return gen_hash
-      //return bodyContents;
   } catch (err) {
     console.log("Error", err);
   }
-  
+
 };
-async function getLastModified(key){
+async function getLastModified(key) {
   var params = {
     Bucket: bucketName,
     Key: key,
   };
+  //getting last modified time of an object in s3 bucket 
   const data = await client.send(new HeadObjectCommand(params));
   return data.LastModified
 }
-async function existsPR(){
+async function existsPR() {
   var res = await octokit.request('GET /repos/{owner}/{repo}/pulls', {
     owner: owner,
     repo: repo
   })
-  console.log(res.data[0].title)
-  return (res.data.filter(e => e.title === 'Updated Config').length > 0) 
- 
+  //checking if a pull request with "Updated Config" as the title exists 
+  return (res.data.filter(e => e.title === 'Updated Config').length > 0)
+
 }
 async function updateConfig() {
   var exists_PR = await existsPR()
-  if(exists_PR){
-   console.log("A Pull Request Already Exists")
-   return
+  if (exists_PR) {
+    console.log("A Pull Request Already Exists")
+    //if a pull request exists, exit early 
+    return
   }
   var branchName = "UpdateConfig_" + new Date().getTime().toString();
+  //generate new branch name with current time 
   await createBranch(branchName)
+  //create new branch 
   await exec.exec('git', ['fetch'], options);
+  //fetch changes 
   console.log("checking out Code")
   await exec.exec('git', ['checkout', branchName], options);
+  //checkout created branch 
   while ((dirent = dir.readSync()) !== null) {
+    // reading all the files in folder where dependency configs are stored
     console.log(dirent.name)
     var config = JSON.parse(fs.readFileSync(path.join(depPath, dirent.name)), 'utf8');
     // opening dependency json file 
-    var s3_dep_list = await list("Dependencies/" +  dirent.name.replace(".json",""))
-    if(!s3_dep_list){
+    var s3_dep_list = await list("Dependencies/" + dirent.name.replace(".json", ""))
+    //getting list of tar files stored on s3 sorted by version descending 
+    if (!s3_dep_list) {
+      //if there are no tar files stored on s3, no pull request is needed 
       continue
     }
     var s3_latest = s3_dep_list[0]
+    //getting the newest version of the tar file 
 
     var LastModified = await getLastModified(s3_latest.Key)
-    if(config["last_updated"] != ""){
+    //getting the last modified time of the newest version of the tar file 
+
+    if (config["last_updated"] != "") {
+      //if config has been updated before
       var last_updated = new Date(config["last_updated"])
-      console.log("Last Updated:" + last_updated + "   " + "Last Modified:" + LastModified)
-      if(LastModified>last_updated){
+      //get time last updated
+      
+      if (LastModified > last_updated) {
+        //if the newest tar file was uploaded after the last time the config file was updated then config file needs to be updated
         config["last_updated"] = new Date().toISOString();
+        //change last updated time to current time 
       }
-      else{
+      else {
         console.log("config already up to date")
-        continue 
+        continue
       }
 
 
     }
-    else{
+    else {
       config["last_updated"] = new Date().toISOString();
+      //config has never been updated, so last updated time must be now 
     }
-    
+
 
     var hash = await generateHash(s3_latest.Key)
-    console.log(hash)
+    //generate hash of latest tar file stored on s3 
+    console.log("hash:" + hash)
     console.log(s3_latest.Key)
     config['SHA512'] = hash
     await fs.writeFile(path.join(depPath, dirent.name), JSON.stringify(config), function writeJSON(err) {
       if (err) return console.log(err);
-      console.log(JSON.stringify(config));
     });
+    //writing changes to file 
 
 
   }
-  try{
-  await exec.exec('git', ['add', '.'], options);
-  await exec.exec('git', ['commit', '-m', 'updated config'], options);
-  await exec.exec('git', ['push'], options);
-  await octokit.request('POST /repos/{owner}/{repo}/pulls', {
-    owner: owner,
-    repo: repo,
-    title: 'Updated Config',
-    body: 'Approve Changes',
-    head: branchName,
-    base: main_branch
-  })}
-  catch(err){
+  try {
+    await exec.exec('git', ['add', '.'], options);
+    //add changes to git 
+    await exec.exec('git', ['commit', '-m', 'updated config'], options);
+    //commit changes 
+    await exec.exec('git', ['push'], options);
+    //push to remote origin 
+    await octokit.request('POST /repos/{owner}/{repo}/pulls', {
+      owner: owner,
+      repo: repo,
+      title: 'Updated Config',
+      body: 'Approve Changes',
+      head: branchName,
+      base: main_branch
+    })
+    //create pull request from newly created branch to the main branch 
+  }
+  catch (err) {
+    //Commiting and Pushing Changes failed
+    //Abort Creating Pull request
+    //Delete newly created branch 
     await octokit.request('DELETE /repos/{owner}/{repo}/git/refs/{ref}', {
       owner: owner,
       repo: repo,
