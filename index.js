@@ -5,28 +5,29 @@ const fs = require('fs');
 const path = require('path')
 const {  S3Client, ListObjectsCommand,GetObjectCommand ,HeadObjectCommand} = require('@aws-sdk/client-s3')
 const { Octokit, App } = require("octokit");
+const exec = require('@actions/exec');
+
 
 var bucketName = core.getInput("bucketName")
 let client = new S3Client();
 let octokit = new Octokit({ auth: core.getInput("token") });
-var repo_list_string = core.getInput("repo")
-var repo_list = repo_list_string.split(",");
-var token = core.getInput("token")
 var depPath = core.getInput("depPath")
-
+var repo = core.getInput("repo")
+var owner = core.getInput("owner")
+var main_branch = core.getInput("main_branch")
 
 const dir = fs.opendirSync(depPath)
 let dirent
 
 function getMainRef() {
   var ref = octokit.request('GET /repos/{owner}/{repo}/git/ref/{ref}', {
-    owner: 'kiryltestorg',
-    repo: 'mainRepo',
-    ref: 'heads/main'
+    owner: owner,
+    repo: repo,
+    ref: 'heads/' + main_branch
   })
   return ref
 }
-const exec = require('@actions/exec');
+
 
 let myOutput = '';
 let myError = '';
@@ -46,8 +47,8 @@ function createRef(hash,branchName) {
   console.log("creating ref")
   return new Promise(function (resolve, reject) {
     var res = octokit.request('POST /repos/{owner}/{repo}/git/refs', {
-      owner: 'kiryltestorg',
-      repo: 'mainRepo',
+      owner: owner,
+      repo: repo,
       ref: 'refs/heads/' + branchName,
       sha: hash
     })
@@ -184,17 +185,17 @@ async function updateConfig() {
   await exec.exec('git', ['commit', '-m', 'updated config'], options);
   await exec.exec('git', ['push'], options);
   await octokit.request('POST /repos/{owner}/{repo}/pulls', {
-    owner: 'kiryltestorg',
-    repo: 'mainRepo',
+    owner: owner,
+    repo: repo,
     title: 'Updated Config',
     body: 'Approve Changes',
     head: branchName,
-    base: 'main'
+    base: main_branch
   })}
   catch(err){
     await octokit.request('DELETE /repos/{owner}/{repo}/git/refs/{ref}', {
-      owner: 'kiryltestorg',
-      repo: 'mainRepo',
+      owner: owner,
+      repo: repo,
       ref: 'heads/' + branchName
     })
   }
