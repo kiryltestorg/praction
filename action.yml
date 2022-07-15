@@ -5,12 +5,15 @@ inputs:
     required: true
   bucketName:
     required: true
-  tarUrl: 
+  repo:
     required: true
-  fileName:
+  depPath:
     required: true
-  path: 
+  main_branch:
     required: true
+  owner: 
+    required: true
+   
 outputs:
   file:
     description: 'Output message'
