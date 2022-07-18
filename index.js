@@ -182,7 +182,7 @@ async function updateConfig() {
       
       if (LastModified > last_updated) {
         //if the newest tar file was uploaded after the last time the config file was updated then config file needs to be updated
-        config["last_updated"] = new Date().toISOString();
+        config["last_updated"] = new Date().toUTCString();
         //change last updated time to current time 
       }
       else {
@@ -193,7 +193,7 @@ async function updateConfig() {
 
     }
     else {
-      config["last_updated"] = new Date().toISOString();
+      config["last_updated"] = new Date().toUTCString();
       //config has never been updated, so last updated time must be now 
     }
 
