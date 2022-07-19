@@ -6,7 +6,6 @@ const path = require('path')
 const { S3Client, ListObjectsCommand, GetObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3')
 const { Octokit, App } = require("octokit");
 const exec = require('@actions/exec');
-const { get } = require('express/lib/response');
 
 
 var bucketName = core.getInput("bucketName")
