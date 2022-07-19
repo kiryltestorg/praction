@@ -158,8 +158,8 @@ async function getBranches(){
 }
 async function CleanUpBranches(){
   var branchList = await getBranches()
-  branchList.forEach(branch => async function (){
-   await  deleteBranch(branch.name)
+  branchList.forEach(branch =>{
+     deleteBranch(branch.name)
   });
 }
 async function updateConfig() {
