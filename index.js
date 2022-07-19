@@ -6,6 +6,7 @@ const path = require('path')
 const { S3Client, ListObjectsCommand, GetObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3')
 const { Octokit, App } = require("octokit");
 const exec = require('@actions/exec');
+const { get } = require('express/lib/response');
 
 
 var bucketName = core.getInput("bucketName")
@@ -142,6 +143,26 @@ async function existsPR() {
   return (res.data.filter(e => e.title === 'Updated Config').length > 0)
 
 }
+async function deleteBranch(branchName){
+  return await octokit.request('DELETE /repos/{owner}/{repo}/git/refs/{ref}', {
+    owner: owner,
+    repo: repo,
+    ref: 'heads/' + branchName
+  })
+}
+async function getBranches(){
+  var res = await octokit.request('GET /repos/{owner}/{repo}/branches', {
+    owner: owner,
+    repo: repo
+  })
+  return (res.data.filter(e=>e.name.includes("UpdateConfig")))
+}
+async function CleanUpBranches(){
+  var branchList = await getBranches()
+  branchList.forEach(branch => {
+   await  deleteBranch(branch.name)
+  });
+}
 async function updateConfig() {
   var exists_PR = await existsPR()
   if (exists_PR) {
@@ -149,6 +170,8 @@ async function updateConfig() {
     //if a pull request exists, exit early 
     return
   }
+  console.log("Cleaning Up Branches")
+  await CleanUpBranches()
   var branchName = "UpdateConfig_" + new Date().getTime().toString();
   //generate new branch name with current time 
   await createBranch(branchName)
@@ -231,11 +254,7 @@ async function updateConfig() {
     //Commiting and Pushing Changes failed
     //Abort Creating Pull request
     //Delete newly created branch 
-    await octokit.request('DELETE /repos/{owner}/{repo}/git/refs/{ref}', {
-      owner: owner,
-      repo: repo,
-      ref: 'heads/' + branchName
-    })
+    await deleteBranch(branchName)
   }
 }
 updateConfig()
