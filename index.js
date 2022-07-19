@@ -159,7 +159,7 @@ async function getBranches(){
 }
 async function CleanUpBranches(){
   var branchList = await getBranches()
-  branchList.forEach(branch => {
+  branchList.forEach(branch => async function (){
    await  deleteBranch(branch.name)
   });
 }
