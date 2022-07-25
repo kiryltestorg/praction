@@ -184,6 +184,9 @@ async function updateConfig() {
     // reading all the files in folder where dependency configs are stored
     console.log(dirent.name)
     var config = JSON.parse(fs.readFileSync(path.join(depPath, dirent.name)), 'utf8');
+    if(config["freeze"]){
+      continue
+    }
     // opening dependency json file 
     var s3_dep_list = await list("Dependencies/" + dirent.name.replace(".json", ""))
     //getting list of tar files stored on s3 sorted by version descending 
@@ -225,6 +228,10 @@ async function updateConfig() {
     console.log("hash:" + hash)
     console.log(s3_latest.Key)
     config['SHA512'] = hash
+    if(config["version"] === ""){
+      var version = "v" + s3_latest.Key.replace("Dependencies/" + dirent.name.replace(".json", "") + "/" + dirent.name.replace(".json", "")  + "-","").replace(".tar.gz","")
+      config["version"] = version
+    }
     await fs.writeFile(path.join(depPath, dirent.name), JSON.stringify(config), function writeJSON(err) {
       if (err) return console.log(err);
     });
