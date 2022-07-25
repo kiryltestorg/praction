@@ -228,10 +228,9 @@ async function updateConfig() {
     console.log("hash:" + hash)
     console.log(s3_latest.Key)
     config['SHA512'] = hash
-    if(config["version"] === ""){
-      var version = "v" + s3_latest.Key.replace("Dependencies/" + dirent.name.replace(".json", "") + "/" + dirent.name.replace(".json", "")  + "-","").replace(".tar.gz","")
-      config["version"] = version
-    }
+    var version = "v" + s3_latest.Key.replace("Dependencies/" + dirent.name.replace(".json", "") + "/" + dirent.name.replace(".json", "")  + "-","").replace(".tar.gz","")
+    config["version"] = version
+    
     await fs.writeFile(path.join(depPath, dirent.name), JSON.stringify(config), function writeJSON(err) {
       if (err) return console.log(err);
     });
