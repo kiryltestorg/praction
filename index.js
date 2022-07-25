@@ -185,6 +185,7 @@ async function updateConfig() {
     console.log(dirent.name)
     var config = JSON.parse(fs.readFileSync(path.join(depPath, dirent.name)), 'utf8');
     if(config["freeze"]){
+      console.log("Version Freeze Enabled Skipping Updates")
       continue
     }
     // opening dependency json file 
