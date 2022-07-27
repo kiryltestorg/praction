@@ -183,14 +183,14 @@ async function updateConfig() {
   while ((dirent = dir.readSync()) !== null) {
     // reading all the files in folder where dependency configs are stored
     console.log(dirent.name)
-    var repo = dirent.name.replace(".json", "")
+    var current_repo = dirent.name.replace(".json", "")
     var config = JSON.parse(fs.readFileSync(path.join(depPath, dirent.name)), 'utf8');
     if(config["freeze"]){
       console.log("Version Freeze Enabled Skipping Updates")
       continue
     }
     // opening dependency json file 
-    var s3_dep_list = await ListDepS3("Dependencies/" + repo)
+    var s3_dep_list = await ListDepS3("Dependencies/" + current_repo)
     //getting list of tar files stored on s3 sorted by version descending 
     if (!s3_dep_list) {
       //if there are no tar files stored on s3, no pull request is needed 
@@ -230,7 +230,7 @@ async function updateConfig() {
     console.log("hash:" + hash)
     console.log(s3_latest.Key)
     config['SHA512'] = hash
-    var version = "v" + s3_latest.Key.replace("Dependencies/" + repo + "/" + repo  + "-","").replace(".tar.gz","")
+    var version = "v" + s3_latest.Key.replace("Dependencies/" + current_repo + "/" + current_repo  + "-","").replace(".tar.gz","")
     config["version"] = version
     
     await fs.writeFile(path.join(depPath, dirent.name), JSON.stringify(config), function writeJSON(err) {
