@@ -75,7 +75,7 @@ async function createBranch(branchName) {
 
 }
 
-async function list(path) {
+async function ListDepS3(path) {
   var params = {
     Bucket: bucketName,
     Prefix: path + "/",
@@ -86,8 +86,8 @@ async function list(path) {
     return data
   }
   //gets all objects in the bucket specified by path 
-  var files = data.Contents?.filter((file) => { return file.Key.indexOf('.gz') > 0 }).sort((file1, file2) => -1 * file1.Key.localeCompare(file2.Key))
-  //gets all the file names that end with the file extension .gz and sorts them desc alphabetically
+  var files = data.Contents?.filter((file) => { return file.Key.indexOf('.gz') > 0 }).sort((file1,file2)=>(-1*(file1.LastModified-file2.LastModified)))
+  //gets all the file names that end with the file extension .gz and sorts them by LastModified Desc 
   //result is an array with the most recent versions of the tar files coming first 
   return files
 }
@@ -189,7 +189,7 @@ async function updateConfig() {
       continue
     }
     // opening dependency json file 
-    var s3_dep_list = await list("Dependencies/" + dirent.name.replace(".json", ""))
+    var s3_dep_list = await ListDepS3("Dependencies/" + dirent.name.replace(".json", ""))
     //getting list of tar files stored on s3 sorted by version descending 
     if (!s3_dep_list) {
       //if there are no tar files stored on s3, no pull request is needed 
@@ -229,7 +229,8 @@ async function updateConfig() {
     console.log("hash:" + hash)
     console.log(s3_latest.Key)
     config['SHA512'] = hash
-    var version = "v" + s3_latest.Key.replace("Dependencies/" + dirent.name.replace(".json", "") + "/" + dirent.name.replace(".json", "")  + "-","").replace(".tar.gz","")
+    var repo = dirent.name.replace(".json", "")
+    var version = "v" + s3_latest.Key.replace("Dependencies/" + repo + "/" + repo  + "-","").replace(".tar.gz","")
     config["version"] = version
     
     await fs.writeFile(path.join(depPath, dirent.name), JSON.stringify(config), function writeJSON(err) {
