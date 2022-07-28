@@ -63,7 +63,7 @@ async function createBranch(branchName) {
   }
 }
 
-async function ListDepS3(path) {
+async function ListDependenciesS3(path) {
   var params = {
     Bucket: bucketName,
     Prefix: path + "/",
@@ -198,7 +198,7 @@ async function updateConfig() {
     }
     // opening dependency json file
 
-    var s3_dep_list = await ListDepS3("Dependencies/" + current_repo);
+    var s3_dep_list = await ListDependenciesS3("Dependencies/" + current_repo);
     // getting list of tar files stored on s3 sorted by version descending
 
     if (!s3_dep_list) {
