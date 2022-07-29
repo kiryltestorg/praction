@@ -22,8 +22,8 @@ const dir = fs.opendirSync(depPath);
 
 // opens folder where dependency configs are stored
 
-function getMainRef() {
-  var ref = octokit.request("GET /repos/{owner}/{repo}/git/ref/{ref}", {
+async function getMainRef() {
+  var ref = await octokit.request("GET /repos/{owner}/{repo}/git/ref/{ref}", {
     owner: owner,
     repo: repo,
     ref: "heads/" + main_branch,
@@ -33,21 +33,19 @@ function getMainRef() {
   return ref;
 }
 
-function createRef(hash, branchName) {
+async function createRef(hash, branchName) {
   // creating a new branch with name: branchName
   // based on hash taken from the branch we want the new one to be based on
 
   console.log("creating ref");
-  return new Promise(function (resolve, reject) {
-    var res = octokit.request("POST /repos/{owner}/{repo}/git/refs", {
+    var res = await octokit.request("POST /repos/{owner}/{repo}/git/refs", {
       owner: owner,
       repo: repo,
       ref: "refs/heads/" + branchName,
       sha: hash,
     });
 
-    resolve(res);
-  });
+    return res
 }
 async function createBranch(branchName) {
   try {
@@ -160,6 +158,7 @@ async function CleanUpBranches() {
   });
 }
 async function updateConfig() {
+  try{
   var exists_PR = await existsPR();
   if (exists_PR) {
     console.log("A Pull Request Already Exists");
@@ -261,7 +260,6 @@ async function updateConfig() {
     // writing changes to file
 
   }
-  try {
     await exec.exec("git", ["add", "."]);
     // add changes to git
 
