@@ -26,16 +26,16 @@ const dir = fs.opendirSync(depPath);
 async function getMainRef() {
   // create ref of the main branch
   try {
-    let ref = await octokit.request("GET /repos/{owner}/{repo}/git/ref/{ref}", {
+    const ref = await octokit.request("GET /repos/{owner}/{repo}/git/ref/{ref}", {
       owner: owner,
       repo: repo,
       ref: "heads/" + main_branch,
     });
+    return ref
   } catch (err) {
     console.log(err);
     throw err;
   }
-  return ref;
 }
 
 async function createRef(hash, branchName) {
@@ -49,17 +49,17 @@ async function createRef(hash, branchName) {
       ref: "refs/heads/" + branchName,
       sha: hash,
     });
+    return res;
   } catch (err) {
     console.log(err);
     throw err;
   }
-  return res;
 }
 
 async function createBranch(branchName) {
   try {
     // get ref of branch we want the new branch to be based on
-    let ref = await getMainRef();
+    const ref = await getMainRef();
 
     const hash = ref.data.object.sha;
     
