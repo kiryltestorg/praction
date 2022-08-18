@@ -59,7 +59,7 @@ async function createRef(hash, branchName) {
 async function createBranch(branchName) {
   try {
     // get ref of branch we want the new branch to be based on
-    const ref = await getMainRef();
+    let ref = await getMainRef();
 
     const hash = ref.data.object.sha;
     
