@@ -2,6 +2,7 @@ const core = require("@actions/core");
 const github = require("@actions/github");
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const {
   S3Client,
   ListObjectsCommand,
@@ -11,13 +12,13 @@ const {
 const { Octokit, App } = require("octokit");
 const exec = require("@actions/exec");
 
-var bucketName = core.getInput("bucketName");
-let client = new S3Client();
-let octokit = new Octokit({ auth: core.getInput("token") });
-var depPath = core.getInput("depPath");
-var repo = core.getInput("repo");
-var owner = core.getInput("owner");
-var main_branch = core.getInput("main_branch");
+const bucketName = core.getInput("bucketName");
+const client = new S3Client();
+const octokit = new Octokit({ auth: core.getInput("token") });
+const depPath = core.getInput("depPath");
+const repo = core.getInput("repo");
+const owner = core.getInput("owner");
+const main_branch = core.getInput("main_branch");
 
 // opens folder where dependency configs are stored
 const dir = fs.opendirSync(depPath);
@@ -25,7 +26,7 @@ const dir = fs.opendirSync(depPath);
 async function getMainRef() {
   // create ref of the main branch
   try {
-    var ref = await octokit.request("GET /repos/{owner}/{repo}/git/ref/{ref}", {
+    const ref = await octokit.request("GET /repos/{owner}/{repo}/git/ref/{ref}", {
       owner: owner,
       repo: repo,
       ref: "heads/" + main_branch,
@@ -42,7 +43,7 @@ async function createRef(hash, branchName) {
   // based on hash taken from the branch we want the new one to be based on
   try {
     console.log("creating ref");
-    var res = await octokit.request("POST /repos/{owner}/{repo}/git/refs", {
+    const res = await octokit.request("POST /repos/{owner}/{repo}/git/refs", {
       owner: owner,
       repo: repo,
       ref: "refs/heads/" + branchName,
@@ -58,12 +59,12 @@ async function createRef(hash, branchName) {
 async function createBranch(branchName) {
   try {
     // get ref of branch we want the new branch to be based on
-    var ref = await getMainRef();
+    const ref = await getMainRef();
 
-    var hash = ref.data.object.sha;
-
+    const hash = ref.data.object.sha;
+    
     // pass in the hash
-    var res = await createRef(hash, branchName);
+    const res = await createRef(hash, branchName);
   } catch (err) {
     console.log(err);
     throw err;
@@ -71,7 +72,7 @@ async function createBranch(branchName) {
 }
 
 async function listDependenciesS3(path) {
-  var params = {
+  const params = {
     Bucket: bucketName,
     Prefix: path + "/",
   };
@@ -84,7 +85,7 @@ async function listDependenciesS3(path) {
 
   // gets all the file names that end with the file extension .gz and sorts them by LastModified Desc
   // result is an array with the most recent versions of the tar files coming first
-  var files = data.Contents?.filter((file) => {
+  const files = data.Contents?.filter((file) => {
     return file.Key.includes(".gz");
   }).sort((file1, file2) => file2.LastModified - file1.LastModified);
 
@@ -92,7 +93,7 @@ async function listDependenciesS3(path) {
 }
 
 async function generateHash(key) {
-  var params = {
+  const params = {
     Bucket: bucketName,
     Key: key,
   };
@@ -112,10 +113,8 @@ async function generateHash(key) {
     // Convert the ReadableStream to a string.
     const bodyContents = await streamToString(data.Body);
 
-    var crypto = require("crypto");
-
     // creating hash object
-    var hash = crypto.createHash("sha512");
+    const hash = crypto.createHash("sha512");
 
     // passing the data to be hashed
     hash_data = hash.update(bodyContents, "utf-8");
@@ -130,7 +129,7 @@ async function generateHash(key) {
 }
 
 async function getLastModified(key) {
-  var params = {
+  const params = {
     Bucket: bucketName,
     Key: key,
   };
@@ -140,7 +139,7 @@ async function getLastModified(key) {
 }
 
 async function existsPR() {
-  var res = await octokit.request("GET /repos/{owner}/{repo}/pulls", {
+  const res = await octokit.request("GET /repos/{owner}/{repo}/pulls", {
     owner: owner,
     repo: repo,
   });
@@ -168,7 +167,7 @@ async function deleteBranch(branchName) {
 
 async function getBranches() {
   try {
-    var res = await octokit.request("GET /repos/{owner}/{repo}/branches", {
+    const res = await octokit.request("GET /repos/{owner}/{repo}/branches", {
       owner: owner,
       repo: repo,
     });
@@ -180,7 +179,7 @@ async function getBranches() {
 }
 
 async function cleanUpBranches() {
-  var branchList = await getBranches();
+  const branchList = await getBranches();
   branchList.forEach((branch) => {
     deleteBranch(branch.name);
   });
@@ -188,7 +187,7 @@ async function cleanUpBranches() {
 
 async function updateConfig() {
   try {
-    var exists_PR = await existsPR();
+    const exists_PR = await existsPR();
 
     // if a pull request exists, exit early
     if (exists_PR) {
@@ -200,7 +199,7 @@ async function updateConfig() {
     await cleanUpBranches();
 
     // generate new branch name with current time
-    var branchName = "AutomatedConfigUpdate_" + new Date().getTime().toString();
+    const branchName = "AutomatedConfigUpdate_" + new Date().getTime().toString();
 
     // create new branch
     await createBranch(branchName);
@@ -217,10 +216,10 @@ async function updateConfig() {
     // reading all the files in folder where dependency configs are stored
     while ((dirent = dir.readSync()) !== null) {
       console.log(dirent.name);
-      var current_repo = dirent.name.replace(".json", "");
+      const current_repo = dirent.name.replace(".json", "");
 
       // opening dependency json file
-      var config = JSON.parse(
+      let config = JSON.parse(
         fs.readFileSync(path.join(depPath, dirent.name)),
         "utf8"
       );
@@ -230,7 +229,7 @@ async function updateConfig() {
       }
 
       // getting list of tar files stored on s3 sorted by version descending
-      var s3_dep_list = await listDependenciesS3(
+      const s3_dep_list = await listDependenciesS3(
         "Dependencies/" + current_repo
       );
 
@@ -241,15 +240,15 @@ async function updateConfig() {
       }
 
       // getting the newest version of the tar file
-      var s3_latest = s3_dep_list[0];
+      const s3_latest = s3_dep_list[0];
 
       // getting the last modified time of the newest version of the tar file
-      var lastModified = await getLastModified(s3_latest.Key);
+      const lastModified = await getLastModified(s3_latest.Key);
 
       // if config has been updated before
       if (config["last_updated"] != "") {
         // get time last updated
-        var last_updated = new Date(config["last_updated"]);
+        const last_updated = new Date(config["last_updated"]);
 
         // if the newest tar file was uploaded after the last time the config file was updated then config file needs to be updated
         if (lastModified > last_updated) {
@@ -264,12 +263,12 @@ async function updateConfig() {
         config["last_updated"] = new Date().toUTCString();
       }
       // generate hash of latest tar file stored on s3
-      var hash = await generateHash(s3_latest.Key);
+      const hash = await generateHash(s3_latest.Key);
 
       console.log("hash:" + hash);
       console.log(s3_latest.Key);
       config["SHA512"] = hash;
-      var version =
+      const version =
         "v" +
         s3_latest.Key.replace(
           "Dependencies/" + current_repo + "/" + current_repo + "-",
