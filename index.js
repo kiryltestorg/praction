@@ -26,7 +26,7 @@ const dir = fs.opendirSync(depPath);
 async function getMainRef() {
   // create ref of the main branch
   try {
-    const ref = await octokit.request("GET /repos/{owner}/{repo}/git/ref/{ref}", {
+    let ref = await octokit.request("GET /repos/{owner}/{repo}/git/ref/{ref}", {
       owner: owner,
       repo: repo,
       ref: "heads/" + main_branch,
