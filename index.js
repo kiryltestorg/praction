@@ -186,6 +186,7 @@ async function cleanUpBranches() {
 }
 
 async function updateConfig() {
+  const branchName = "AutomatedConfigUpdate_" + new Date().getTime().toString();
   try {
     const existsPR = await existsPR();
 
@@ -199,7 +200,7 @@ async function updateConfig() {
     await cleanUpBranches();
 
     // generate new branch name with current time
-    const branchName = "AutomatedConfigUpdate_" + new Date().getTime().toString();
+    
 
     // create new branch
     await createBranch(branchName);
