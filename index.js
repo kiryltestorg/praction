@@ -18,7 +18,7 @@ const octokit = new Octokit({ auth: core.getInput("token") });
 const depPath = core.getInput("depPath");
 const repo = core.getInput("repo");
 const owner = core.getInput("owner");
-const main_branch = core.getInput("main_branch");
+const mainBranch = core.getInput("main_branch");
 
 // opens folder where dependency configs are stored
 const dir = fs.opendirSync(depPath);
@@ -29,7 +29,7 @@ async function getMainRef() {
     const ref = await octokit.request("GET /repos/{owner}/{repo}/git/ref/{ref}", {
       owner: owner,
       repo: repo,
-      ref: "heads/" + main_branch,
+      ref: "heads/" + mainBranch,
     });
     return ref
   } catch (err) {
@@ -117,11 +117,11 @@ async function generateHash(key) {
     const hash = crypto.createHash("sha512");
 
     // passing the data to be hashed
-    hash_data = hash.update(bodyContents, "utf-8");
+    hashData = hash.update(bodyContents, "utf-8");
 
     // Creating the hash in the required format
-    gen_hash = hash_data.digest("hex");
-    return gen_hash;
+    genHash = hashData.digest("hex");
+    return genHash;
   } catch (err) {
     console.log("Error", err);
     throw err;
@@ -187,10 +187,11 @@ async function cleanUpBranches() {
 
 async function updateConfig() {
   try {
-    const exists_PR = await existsPR();
+
+    const existsPr = await existsPR();
 
     // if a pull request exists, exit early
-    if (exists_PR) {
+    if (existsPr) {
       console.log("A Pull Request Already Exists");
 
       return;
@@ -216,7 +217,7 @@ async function updateConfig() {
     // reading all the files in folder where dependency configs are stored
     while ((dirent = dir.readSync()) !== null) {
       console.log(dirent.name);
-      const current_repo = dirent.name.replace(".json", "");
+      const currentRepo = dirent.name.replace(".json", "");
 
       // opening dependency json file
       let config = JSON.parse(
@@ -229,29 +230,29 @@ async function updateConfig() {
       }
 
       // getting list of tar files stored on s3 sorted by version descending
-      const s3_dep_list = await listDependenciesS3(
-        "Dependencies/" + current_repo
+      const s3DepList = await listDependenciesS3(
+        "Dependencies/" + currentRepo
       );
 
       // if there are no tar files stored on s3, no pull request is needed
-      if (!s3_dep_list) {
+      if (!s3DepList) {
         console.log("No Dependencies on S3 storage");
         continue;
       }
 
       // getting the newest version of the tar file
-      const s3_latest = s3_dep_list[0];
+      const s3Latest = s3DepList[0];
 
       // getting the last modified time of the newest version of the tar file
-      const lastModified = await getLastModified(s3_latest.Key);
+      const lastModified = await getLastModified(s3Latest.Key);
 
       // if config has been updated before
       if (config["last_updated"] != "") {
         // get time last updated
-        const last_updated = new Date(config["last_updated"]);
+        const lastUpdated = new Date(config["last_updated"]);
 
         // if the newest tar file was uploaded after the last time the config file was updated then config file needs to be updated
-        if (lastModified > last_updated) {
+        if (lastModified > lastUpdated) {
           // change last updated time to current time
           config["last_updated"] = new Date().toUTCString();
         } else {
@@ -263,15 +264,15 @@ async function updateConfig() {
         config["last_updated"] = new Date().toUTCString();
       }
       // generate hash of latest tar file stored on s3
-      const hash = await generateHash(s3_latest.Key);
+      const hash = await generateHash(s3Latest.Key);
 
       console.log("hash:" + hash);
-      console.log(s3_latest.Key);
+      console.log(s3Latest.Key);
       config["SHA512"] = hash;
       const version =
         "v" +
-        s3_latest.Key.replace(
-          "Dependencies/" + current_repo + "/" + current_repo + "-",
+        s3Latest.Key.replace(
+          "Dependencies/" + currentRepo + "/" + currentRepo + "-",
           ""
         ).replace(".tar.gz", "");
       config["version"] = version;
@@ -300,7 +301,7 @@ async function updateConfig() {
       title: "Automated Config Update",
       body: "Approve Changes",
       head: branchName,
-      base: main_branch,
+      base: mainBranch,
     });
   } catch (err) {
     // Commiting and Pushing Changes failed
