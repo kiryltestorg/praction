@@ -190,7 +190,7 @@ async function updateConfig() {
    const branchName = "AutomatedConfigUpdate_" + new Date().getTime().toString();
   try {
 
-    const existsPr = await existsPR();
+    const existsPr = await existsPR(); 
 
     // if a pull request exists, exit early
     if (existsPr) {
